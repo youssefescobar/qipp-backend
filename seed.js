@@ -32,7 +32,7 @@ async function seed() {
     // 3. Seed Roster
     const formattedRoster = rosterData.map(p => ({
       name: p.name,
-      empId: p.empId,
+      empId: p.empId ? String(p.empId).trim() : `TEMP-${p.id || Math.floor(Math.random() * 10000)}`,
       crew: p.crew,
       role: p.role,
       color: p.color,
@@ -51,23 +51,41 @@ async function seed() {
       return {
         date: new Date(`${year}-${month}-${day}`),
         generation: d.Generation,
-        netGen: d.NetGen,
+        netGen: d.NetGen ?? ((d.Generation != null && d.Aux != null) ? (d.Generation - d.Aux) : null),
         load: d.Load,
         plf: d.PLF || (d.Load ? (d.Load / 3883.2 * 100) : 0),
         efficiency: d.Efficiency,
         heatRate: d.HeatRate,
         fuel: d.Fuel,
+        aux: d.Aux,
+        mfeqh: d.MFEQH,
         emissions: {
-          nox: d.Emissions.NOx,
-          sox: d.Emissions.SOx,
-          co: d.Emissions.CO,
-          particulate: d.Emissions.Particulate,
-          stackTemp: d.Emissions.StackTemp
+          nox: d.Emissions?.NOx,
+          sox: d.Emissions?.SOx,
+          co: d.Emissions?.CO,
+          particulate: d.Emissions?.Particulate,
+          stackTemp: d.Emissions?.StackTemp
         },
         water: {
-          roProduction: d.Water.ROProduction
+          roProduction: d.Water?.ROProduction
         },
-        airIntakeDP: d.AirIntakeDP
+        airIntakeDP: d.AirIntakeDP,
+        weather: {
+          tempMax: d.TempMax,
+          tempMin: d.TempMin,
+          tempAvg: d.TempAvg,
+          maxRH: d.MaxRH,
+          minRH: d.MinRH,
+          windSpeed: d.WindSpeed
+        },
+        units: d.Units ? d.Units.map(u => ({
+          group: u.Group,
+          unit: u.Unit,
+          type: u.Type,
+          load: u.Load,
+          generation: u.Generation,
+          mfeqh: u.MFEQH
+        })) : []
       };
     });
     await PlantPerformance.insertMany(formattedKpis);
