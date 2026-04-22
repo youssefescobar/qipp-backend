@@ -136,6 +136,43 @@ async function seedDemo() {
     await EnvironmentalReport.insertMany(envReports);
     console.log('✅ Performance & Env Data Seeded');
 
+    // 4. Seed Safety Permits (Realistic Work Tasks)
+    const permitTypes = ['Hot Work', 'Cold Work', 'Confined Space', 'Working at Height', 'Electrical Isolation', 'General'];
+    const permitStatuses = ['Pending', 'Active', 'Suspended', 'Closed'];
+    const locations = ['Turbine Hall', 'Boiler Area', 'Pump House', 'Substation', 'Stack Platform', 'Fuel Tank Farm', 'Control Room', 'Workshop'];
+    const tasks = [
+        'Welding on pipe support', 'Gasket replacement', 'Cleaning condenser tubes', 'Painting high platforms',
+        'Transformer maintenance', 'Valve replacement', 'Lighting system repair', 'AC maintenance'
+    ];
+    
+    const permits = [];
+    for (let i = 0; i < 50; i++) {
+        const type = randomChoice(permitTypes);
+        const task = randomChoice(tasks);
+        const location = randomChoice(locations);
+        
+        // Random dates in the last 3 months
+        const validFrom = new Date();
+        validFrom.setDate(validFrom.getDate() - Math.floor(Math.random() * 90));
+        const validTo = new Date(validFrom);
+        validTo.setHours(validTo.getHours() + 8);
+
+        permits.push({
+            permitId: `PTW-2026-${1000 + i}`,
+            type,
+            status: randomChoice(permitStatuses),
+            location,
+            description: `${task} at ${location}`,
+            issuedBy: `User ${Math.floor(Math.random() * 50) + 1}`,
+            authorizedBy: `Admin ${Math.floor(Math.random() * 5) + 1}`,
+            contractor: randomChoice(['Elite Mechanical', 'Siemens', 'NOMAC', 'General Electric', 'Alstom']),
+            validFrom,
+            validTo
+        });
+    }
+    await SafetyPermit.insertMany(permits);
+    console.log(`✅ Seeded ${permits.length} Safety Permits`);
+
     console.log('🚀 UNIFIED REALISTIC DEMO SEEDING COMPLETE!');
     process.exit(0);
   } catch (error) {
