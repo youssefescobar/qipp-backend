@@ -3,13 +3,14 @@ const router = express.Router();
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const environmentalReportController = require('../controllers/environmentalReportController');
+const { protect } = require('../middleware/auth');
 
-router.get('/', environmentalReportController.getAll);
-router.post('/', environmentalReportController.create);
-router.put('/:id', environmentalReportController.update);
-router.delete('/:id', environmentalReportController.remove);
-router.get('/export/csv', environmentalReportController.exportCSV);
-router.get('/export/excel', environmentalReportController.exportExcel);
-router.post('/import', upload.single('file'), environmentalReportController.importData);
+router.get('/', protect, environmentalReportController.getAll);
+router.post('/', protect, environmentalReportController.create);
+router.put('/:id', protect, environmentalReportController.update);
+router.delete('/:id', protect, environmentalReportController.remove);
+router.get('/export/csv', protect, environmentalReportController.exportCSV);
+router.get('/export/excel', protect, environmentalReportController.exportExcel);
+router.post('/import', protect, upload.single('file'), environmentalReportController.importData);
 
 module.exports = router;

@@ -4,6 +4,7 @@ const Employee = require('./models/Employee');
 const PlantPerformance = require('./models/PlantPerformance');
 
 const AdminUser = require('./models/AdminUser');
+const AdminConfig = require('./models/AdminConfig');
 const bcrypt = require('bcryptjs');
 
 const rosterData = require('./data/roster.json');
@@ -18,16 +19,41 @@ async function seed() {
     await Employee.deleteMany({});
     await PlantPerformance.deleteMany({});
     await AdminUser.deleteMany({});
+    await AdminConfig.deleteMany({});
     console.log('🧹 Cleared existing data');
 
-    // 2. Seed Admin User
-    const passwordHash = await bcrypt.hash('acwa123', 10);
+    // 2. Initialize System Config
+    const config = new AdminConfig();
+    await config.save();
+    console.log('⚙️ System Config Initialized');
+
+    // 3. Seed Admin User
+    const adminPasswordHash = await bcrypt.hash('acwa_admin_2026', 10);
     const admin = new AdminUser({
-       email: 'admin@acwa.com',
-       passwordHash
+       email: 'ops.admin@acwapower.com',
+       passwordHash: adminPasswordHash,
+       name: 'System Administrator',
+       empId: 'ADMIN-001',
+       crew: 'S',
+       role: 'Management',
+       accessRole: 'admin'
     });
     await admin.save();
-    console.log('👑 Default Admin created: admin@acwa.com / acwa123');
+
+    const viewerPasswordHash = await bcrypt.hash('acwa_ops_2026', 10);
+    const viewer = new AdminUser({
+       email: 'operations@acwapower.com',
+       passwordHash: viewerPasswordHash,
+       name: 'Operations Team',
+       empId: 'OPS-001',
+       crew: 'A',
+       role: 'CCR Operator',
+       accessRole: 'viewer'
+    });
+    await viewer.save();
+
+    console.log('👑 Admin created: ops.admin@acwapower.com / acwa_admin_2026');
+    console.log('👤 Viewer created: operations@acwapower.com / acwa_ops_2026');
 
     // 3. Seed Roster
     const formattedRoster = rosterData.map(p => ({
@@ -45,7 +71,7 @@ async function seed() {
     await Employee.insertMany(formattedRoster);
     console.log(`✅ Seeded ${formattedRoster.length} employees`);
 
-    // 3. Seed KPI Data
+    // 4. Seed KPI Data
     const formattedKpis = plantData.map(d => {
       const [day, month, year] = d.Date.split(".");
       return {
